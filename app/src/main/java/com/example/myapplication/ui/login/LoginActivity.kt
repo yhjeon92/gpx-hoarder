@@ -3,10 +3,12 @@ package com.example.myapplication.ui.login
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.icu.text.SimpleDateFormat
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Environment
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Button
@@ -19,14 +21,22 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.myapplication.R
 import com.example.myapplication.databinding.ActivityLoginBinding
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileWriter
+import java.util.*
 
 class LoginActivity : AppCompatActivity(), LocationListener {
-
-    private lateinit var loginViewModel: LoginViewModel
     private lateinit var locationManager: LocationManager
     private lateinit var tvGpsLocation: TextView
+    private lateinit var tvAltitude: TextView
+    private lateinit var tvTimestamp: TextView
+
     private val locationPermissionCode = 2
     private lateinit var binding: ActivityLoginBinding
+
+    private lateinit var fileWriter: FileWriter
+    private lateinit var bufferedWriter: BufferedWriter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,75 +49,46 @@ class LoginActivity : AppCompatActivity(), LocationListener {
             getLocation()
         }
 
-//        val username = binding.username
-//        val password = binding.password
-//        val login = binding.login
-//        val loading = binding.loading
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(this,
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ), 1
+            )
+        }
 
-//        loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
-//                .get(LoginViewModel::class.java)
-//
-//        loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
-//            val loginState = it ?: return@Observer
-//
-//            // disable login button unless both username / password is valid
-//            login.isEnabled = loginState.isDataValid
-//
-//            if (loginState.usernameError != null) {
-//                username.error = getString(loginState.usernameError)
-//            }
-//            if (loginState.passwordError != null) {
-//                password.error = getString(loginState.passwordError)
-//            }
-//        })
-//
-//        loginViewModel.loginResult.observe(this@LoginActivity, Observer {
-//            val loginResult = it ?: return@Observer
-//
-//            loading.visibility = View.GONE
-//            if (loginResult.error != null) {
-//                showLoginFailed(loginResult.error)
-//            }
-//            if (loginResult.success != null) {
-//                updateUiWithUser(loginResult.success)
-//            }
-//            setResult(Activity.RESULT_OK)
-//
-//            //Complete and destroy login activity once successful
-//            finish()
-//        })
-//
-//        username.afterTextChanged {
-//            loginViewModel.loginDataChanged(
-//                    username.text.toString(),
-//                    password.text.toString()
-//            )
-//        }
-//
-//        password.apply {
-//            afterTextChanged {
-//                loginViewModel.loginDataChanged(
-//                        username.text.toString(),
-//                        password.text.toString()
-//                )
-//            }
-//
-//            setOnEditorActionListener { _, actionId, _ ->
-//                when (actionId) {
-//                    EditorInfo.IME_ACTION_DONE ->
-//                        loginViewModel.login(
-//                                username.text.toString(),
-//                                password.text.toString()
-//                        )
-//                }
-//                false
-//            }
-//
-//            login.setOnClickListener {
-//                loading.visibility = View.VISIBLE
-//                loginViewModel.login(username.text.toString(), password.text.toString())
-//            }
-//        }
+        //val path = filesDir.path + "/appTest.txt"
+        //Log.d("Test", "path : $path")
+        //fileWriter = FileWriter(File(path), true)
+
+        val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        //val path = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        fileWriter = FileWriter(File(path.absolutePath, "appTest.txt"), true)
+        bufferedWriter = BufferedWriter(fileWriter)
+        bufferedWriter.append("<gpx>")
+        bufferedWriter.newLine()
+        bufferedWriter.append("<trk>")
+        bufferedWriter.newLine()
+        bufferedWriter.append("<name>MyApplicationTest</name>")
+        bufferedWriter.newLine()
+        bufferedWriter.append("<type>CYCLING</type>")
+        bufferedWriter.newLine()
+        bufferedWriter.append("<trkseg>")
+        bufferedWriter.newLine()
+
+        val endAct: Button = findViewById(R.id.endActivity)
+        endAct.setOnClickListener {
+            bufferedWriter.append("</trkseg>")
+            bufferedWriter.newLine()
+            bufferedWriter.append("</trk>")
+            bufferedWriter.newLine()
+            bufferedWriter.append("</gpx>")
+            bufferedWriter.close()
+            fileWriter.close()
+        }
     }
 
     private fun getLocation() {
@@ -121,7 +102,27 @@ class LoginActivity : AppCompatActivity(), LocationListener {
 
     override fun onLocationChanged(location: Location) {
         tvGpsLocation = findViewById(R.id.textView)
+        tvAltitude = findViewById(R.id.altitudeTextView)
+        tvTimestamp = findViewById(R.id.timestampTextView)
         tvGpsLocation.text = "Latitude: " + location.latitude + " , Longitude: " + location.longitude
+        tvAltitude.text = "Altitude: " + location.altitude
+        tvTimestamp.text = "Timestamp: " + location.time
+
+        val latitude: Double = location.latitude
+        val longitude: Double = location.longitude
+        val altitude: Double = location.altitude
+        val timestamp: Long = location.time
+
+        val tsString = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.KOREA).format(Date(timestamp))
+
+        bufferedWriter.append("<trkpt lat=\"$latitude\" lon=\"$longitude\">")
+        bufferedWriter.newLine()
+        bufferedWriter.append("<ele>$altitude</ele>")
+        bufferedWriter.newLine()
+        bufferedWriter.append("<time>$tsString</time>")
+        bufferedWriter.newLine()
+        bufferedWriter.append("</trkpt>")
+        bufferedWriter.newLine()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -150,19 +151,4 @@ class LoginActivity : AppCompatActivity(), LocationListener {
     private fun showLoginFailed(@StringRes errorString: Int) {
         Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
     }
-}
-
-/**
- * Extension function to simplify setting an afterTextChanged action to EditText components.
- */
-fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
-    this.addTextChangedListener(object : TextWatcher {
-        override fun afterTextChanged(editable: Editable?) {
-            afterTextChanged.invoke(editable.toString())
-        }
-
-        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-
-        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-    })
 }

@@ -66,13 +66,25 @@
 <!--        app:layout_constraintTop_toTopOf="parent"-->
 <!--        app:layout_constraintVertical_bias="0.3" />-->
 
+    <Button
+        android:id="@+id/endActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="468dp"
+        android:text="End Activity"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="360dp"
         android:background="#008080"
         android:padding="5dp"
         android:text="TutorialsPoint"
@@ -84,14 +96,42 @@
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="234dp"
-        android:layout_height="wrap_content"
+        android:layout_width="347dp"
+        android:layout_height="53dp"
         android:layout_centerInParent="true"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="48dp"
         android:text="Current GPS Location"
         android:textColor="#000"
-        android:textSize="24sp"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/altitudeTextView"
+        android:layout_width="347dp"
+        android:layout_height="53dp"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="124dp"
+        android:text="Current Altitude:"
+        android:textColor="#000"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/timestampTextView"
+        android:layout_width="347dp"
+        android:layout_height="53dp"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="208dp"
+        android:text="Timestamp:"
+        android:textColor="#000"
+        android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -102,8 +142,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/text"
         android:layout_centerInParent="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="168dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="416dp"
         android:text="Get location"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
