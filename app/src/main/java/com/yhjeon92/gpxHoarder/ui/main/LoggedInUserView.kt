@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.login
+package com.yhjeon92.gpxHoarder.ui.main
 
 /**
  * User details post authentication that is exposed to the UI
