@@ -104,18 +104,20 @@ class LoginActivity : AppCompatActivity(), LocationListener {
         tvAltitude.text = "Altitude: " + location.altitude
         tvTimestamp.text = "Timestamp: " + location.time
 
+        appendTrackPoint(location)
+    }
+
+    private fun appendTrackPoint(location: Location) {
         val latitude: Double = location.latitude
         val longitude: Double = location.longitude
         val altitude: Double = location.altitude
-        val timestamp: Long = location.time
-
-        val tsString = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.KOREA).format(Date(timestamp))
+        val dateTimeString = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.KOREA).format(Date(location.time))
 
         bufferedWriter.append("<trkpt lat=\"$latitude\" lon=\"$longitude\">")
         bufferedWriter.newLine()
         bufferedWriter.append("<ele>$altitude</ele>")
         bufferedWriter.newLine()
-        bufferedWriter.append("<time>$tsString</time>")
+        bufferedWriter.append("<time>$dateTimeString</time>")
         bufferedWriter.newLine()
         bufferedWriter.append("</trkpt>")
         bufferedWriter.newLine()
@@ -131,20 +133,5 @@ class LoginActivity : AppCompatActivity(), LocationListener {
                 Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
-        // TODO : initiate successful logged in experience
-        Toast.makeText(
-                applicationContext,
-                "$welcome $displayName",
-                Toast.LENGTH_LONG
-        ).show()
-    }
-
-    private fun showLoginFailed(@StringRes errorString: Int) {
-        Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
     }
 }
