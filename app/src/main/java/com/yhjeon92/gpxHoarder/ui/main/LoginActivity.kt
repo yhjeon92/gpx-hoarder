@@ -7,20 +7,18 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.yhjeon92.gpxHoarder.R
 import com.yhjeon92.gpxHoarder.databinding.ActivityLoginBinding
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class LoginActivity : AppCompatActivity(), LocationListener {
@@ -49,7 +47,7 @@ class LoginActivity : AppCompatActivity(), LocationListener {
                 arrayOf(
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.READ_EXTERNAL_STORAGE
-                ), 1
+                ), locationPermissionCode
             )
         }
 
@@ -60,32 +58,48 @@ class LoginActivity : AppCompatActivity(), LocationListener {
 
         val endAct: Button = findViewById(R.id.endActivity)
         endAct.setOnClickListener {
+            locationManager.removeUpdates(this)
             stopService(Intent(this, LoggingService::class.java))
         }
     }
 
     private fun startWorkoutLog() {
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                locationPermissionCode)
         }
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.1f, this)
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(this,
-                arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ), 1
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE),
+                locationPermissionCode
             )
         }
 
-        val loggerIntent = Intent(this, LoggingService::class.java)
-        loggerIntent.putExtra("filename", "appTest.txt")
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.FOREGROUND_SERVICE), locationPermissionCode)
+        }
 
-        startService(loggerIntent)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), locationPermissionCode)
+        }
+
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.1f, this)
+
+        val loggerIntent = Intent(this, LoggingService::class.java)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val fileName = "${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))}.gpx"
+            loggerIntent.putExtra("filename", fileName)
+            startForegroundService(loggerIntent)
+        } else {
+            startService(loggerIntent)
+        }
     }
 
     override fun onLocationChanged(location: Location) {
