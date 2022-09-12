@@ -61,6 +61,9 @@ class LoginActivity : AppCompatActivity(), LocationListener {
             locationManager.removeUpdates(this)
             stopService(Intent(this, LoggingService::class.java))
         }
+
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0.5f, this)
     }
 
     private fun startWorkoutLog() {
@@ -88,9 +91,6 @@ class LoginActivity : AppCompatActivity(), LocationListener {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), locationPermissionCode)
         }
 
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.1f, this)
-
         val loggerIntent = Intent(this, LoggingService::class.java)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -108,7 +108,13 @@ class LoginActivity : AppCompatActivity(), LocationListener {
         tvTimestamp = findViewById(R.id.timestampTextView)
         tvGpsLocation.text = "Latitude: " + location.latitude + " , Longitude: " + location.longitude
         tvAltitude.text = "Altitude: " + location.altitude
-        tvTimestamp.text = "Timestamp: " + location.time
+
+        val dateTimeString = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.KOREA).format(
+//            Date(location.time)
+            Date(System.currentTimeMillis())
+        )
+
+        tvTimestamp.text = "Timestamp: " + dateTimeString
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

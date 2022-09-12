@@ -76,7 +76,7 @@ class LoggingService : Service(), LocationListener {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return START_NOT_STICKY
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.1f, this)
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0.5f, this)
 
         return super.onStartCommand(intent, flags, startId)
     }
@@ -99,7 +99,8 @@ class LoggingService : Service(), LocationListener {
         val longitude: Double = location.longitude
         val altitude: Double = location.altitude
         val dateTimeString = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.KOREA).format(
-            Date(location.time)
+//            Date(location.time)
+            Date(System.currentTimeMillis())
         )
 
         bufferedWriter.append("<trkpt lat=\"$latitude\" lon=\"$longitude\">")
